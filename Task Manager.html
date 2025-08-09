@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brooklake Task Management</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #0d47a1;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .logo-container {
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            max-height: 80px;
+            width: auto;
+        }
+        
+        h1 {
+            margin: 10px 0 5px;
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            color: #e3f2fd;
+            font-size: 1.1rem;
+        }
+        
+        .task-selector {
+            padding: 25px;
+            background: #e3f2fd;
+            text-align: center;
+        }
+        
+        .task-selector h2 {
+            color: #0d47a1;
+            margin-bottom: 20px;
+        }
+        
+        .task-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .task-btn {
+            background: white;
+            border: 2px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+            color: #0d47a1;
+        }
+        
+        .task-btn:hover {
+            background: #2196f3;
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .task-btn.selected {
+            background: #0d47a1;
+            color: white;
+            border-color: #0d47a1;
+        }
+        
+        .task-content {
+            padding: 25px;
+            display: none;
+        }
+        
+        .task-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .task-title {
+            color: #0d47a1;
+            margin: 0;
+        }
+        
+        .progress-container {
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            padding: 3px;
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .progress-bar {
+            height: 24px;
+            background: linear-gradient(90deg, #2196f3, #0d47a1);
+            border-radius: 6px;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 24px;
+            transition: width 0.4s ease;
+        }
+        
+        .task-list {
+            margin-top: 20px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-checkbox {
+            margin-right: 15px;
+            margin-top: 3px;
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+        
+        .task-content-wrapper {
+            flex: 1;
+        }
+        
+        .task-text {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        
+        .task-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .employee-select {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-size: 14px;
+        }
+        
+        .timestamp {
+            font-style: italic;
+            color: #0d47a1;
+            font-weight: 500;
+        }
+        
+        .completed .task-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+        
+        .task-number {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #0d47a1;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .save-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            display: block;
+            margin: 25px auto;
+            transition: background 0.3s;
+        }
+        
+        .save-btn:hover {
+            background: #43a047;
+        }
+        
+        .reset-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .reset-btn:hover {
+            background: #d32f2f;
+        }
+        
+        @media (max-width: 768px) {
+            .task-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .progress-container {
+                max-width: 100%;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <!-- ACTUAL BROOKLAKE LOGO -->
+                <img src="https://i.imgur.com/YOUR-ACTUAL-LOGO-URL.png" alt="Brooklake Logo" class="logo" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzBkNDdhMSIvPjx0ZXh0IHg9IjEwMCIgeT0iNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkJSV0w8L3RleHQ+PHRleHQgeD0iMTAwIiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Q291bnRyeUNsdWI8L3RleHQ+PC9zdmc+';">
+            </div>
+            <h1>Brooklake Task Management</h1>
+            <p class="subtitle">Gestión de Tareas</p>
+        </header>
+        
+        <div class="task-selector">
+            <h2>Select Task Type / Seleccione Tipo de Tarea</h2>
+            <div class="task-buttons">
+                <div class="task-btn" data-task="closing">
+                    <div>Closing Tasks</div>
+                    <div>Tareas de Cierre</div>
+                </div>
+                <div class="task-btn" data-task="daily">
+                    <div>Daily Tasks</div>
+                    <div>Tareas Diarias</div>
+                </div>
+                <div class="task-btn" data-task="walkthrough">
+                    <div>Walkthrough</div>
+                    <div>Recorrido</div>
+                </div>
+                <div class="task-btn" data-task="laundry-with-porter">
+                    <div>Laundry with Porter</div>
+                    <div>Laundry con Porter</div>
+                </div>
+                <div class="task-btn" data-task="laundry-solo">
+                    <div>Laundry Solo</div>
+                    <div>Laundry Solo</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Closing Tasks -->
+        <div class="task-content" id="closing-tasks">
+            <div class="task-header">
+                <h2 class="task-title">Closing Tasks / Tareas de Cierre</h2>
+                <div class="progress-container">
+                    <div id="closing-progress" class="progress-bar" style="width: 0%">0%</div>
+                </div>
+                <button class="reset-btn" onclick="resetTasks('closing')">Reset</button>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Check off tasks as they are completed</li>
+                    <li>Select the porter who completed each task</li>
+                    <li>Timestamps are automatically recorded</li>
+                </ul>
+            </div>
+            
+            <div class="task-list" id="closing-task-list">
+                <!-- Tasks will be populated here -->
+            </div>
+            
+            <button class="save-btn" onclick="saveAllTasks()">Save Progress</button>
+        </div>
+        
+        <!-- Daily Tasks -->
+        <div class="task-content" id="daily-tasks">
+            <div class="task-header">
+                <h2 class="task-title">Daily Tasks / Tareas Diarias</h2>
+                <div class="progress-container">
+                    <div id="daily-progress" class="progress-bar" style="width: 0%">0%</div>
+                </div>
+                <button class="reset-btn" onclick="resetTasks('daily')">Reset</button>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Check off tasks as they are completed</li>
+                    <li>Select the porter who completed each task</li>
+                    <li>Timestamps are automatically recorded</li>
+                </ul>
+            </div>
+            
+            <div class="task-list" id="daily-task-list">
+                <!-- Tasks will be populated here -->
+            </div>
+            
+            <button class="save-btn" onclick="saveAllTasks()">Save Progress</button>
+        </div>
+        
+        <!-- Walkthrough Tasks -->
+        <div class="task-content" id="walkthrough-tasks">
+            <div class="task-header">
+                <h2 class="task-title">Walkthrough / Recorrido</h2>
+                <div class="progress-container">
+                    <div id="walkthrough-progress" class="progress-bar" style="width: 0%">0%</div>
+                </div>
+                <button class="reset-btn" onclick="resetTasks('walkthrough')">Reset</button>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Check off tasks as they are completed</li>
+                    <li>Select the porter who completed each task</li>
+                    <li>Timestamps are automatically recorded</li>
+                </ul>
+            </div>
+            
+            <div class="task-list" id="walkthrough-task-list">
+                <!-- Tasks will be populated here -->
+            </div>
+            
+            <button class="save-btn" onclick="saveAllTasks()">Save Progress</button>
+        </div>
+        
+        <!-- Laundry with Porter Tasks -->
+        <div class="task-content" id="laundry-with-porter-tasks">
+            <div class="task-header">
+                <h2 class="task-title">Laundry with Porter / Laundry con Porter</h2>
+                <div class="progress-container">
+                    <div id="laundry-with-porter-progress" class="progress-bar" style="width: 0%">0%</div>
+                </div>
+                <button class="reset-btn" onclick="resetTasks('laundry-with-porter')">Reset</button>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Check off tasks as they are completed</li>
+                    <li>Select the porter who completed each task</li>
+                    <li>Timestamps are automatically recorded</li>
+                </ul>
+            </div>
+            
+            <div class="task-list" id="laundry-with-porter-task-list">
+                <!-- Tasks will be populated here -->
+            </div>
+            
+            <button class="save-btn" onclick="saveAllTasks()">Save Progress</button>
+        </div>
+        
+        <!-- Laundry Solo Tasks -->
+        <div class="task-content" id="laundry-solo-tasks">
+            <div class="task-header">
+                <h2 class="task-title">Laundry Solo</h2>
+                <div class="progress-container">
+                    <div id="laundry-solo-progress" class="progress-bar" style="width: 0%">0%</div>
+                </div>
+                <button class="reset-btn" onclick="resetTasks('laundry-solo')">Reset</button>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Check off tasks as they are completed</li>
+                    <li>Select the porter who completed each task</li>
+                    <li>Timestamps are automatically recorded</li>
+                </ul>
+            </div>
+            
+            <div class="task-list" id="laundry-solo-task-list">
+                <!-- Tasks will be populated here -->
+            </div>
+            
+            <button class="save-btn" onclick="saveAllTasks()">Save Progress</button>
+        </div>
+    </div>
+
+    <script>
+        // Employee list from your skill matrix
+        const employees = [
+            "Hernando Gonzalez",
+            "Luis Salazar", 
+            "Julio C Pena",
+            "Adriana Caballero",
+            "J. Manuel Martinez",
+            "Jerson Castellanos",
+            "Jose Cavero",
+            "Leonardo Granada",
+            "Kevin Leal",
+            "Erick Acevedo"
+        ];
+
+        // Task definitions
+        const taskDefinitions = {
+            closing: {
+                title: "Closing Tasks / Tareas de Cierre",
+                tasks: [
+                    "Al llegar, revisar que las luces del Ballroom esten dirigidas hacia los centros de las mesas en caso de funcion",
+                    "Revisar los gases de los heaters y cambiar los cilindros en caso de ser necesario",
+                    "Revisar las mesas del patio que esten bien vestidas en caso de haber funcion",
+                    "Baños de Terrace Grill, Waterford revisar y limpiar, asi como cualquier necesidad del restaurant en caso de estar abierto",
+                    "Baños del Lounge y empleados limpiar en caso de ser necesario",
+                    "Pasillo verde y UPS Room mantener ordenado y limpio, si dejan cajas vacias, disponer de ellas",
+                    "Baños de Tennis (Remover toallas sucias y reponer con limpias)",
+                    "Limpiar banos de empleados a ultima hora",
+                    "Piscina chequear toallas, mismo procedimiento",
+                    "Todas las toallas sucias llevar al laundry y ponerlas a lavar de inmediato, volver a los 30 minutos y ponerlas a secar en HIGH por 40 minutos. Al terminar el secado si es posible fold y embolsar",
+                    "Quitar cushions del patio detras de la piscina y ordenar sillas, en caso de haber utilizado Pizza oven, remover linen, tent, sombrilla y mesas. Si hay 2 porters remover el Pizza Oven tambien",
+                    "A ultima hora, chequear Brookroom y remover cajas, basura y cambiar manteleria si fuera necesario",
+                    "Al final de cada dia, remover las bolsas de garbage en la entrada principal y de Golf",
+                    "Al terminar la funcion, retirar manteleria y estaquear sillas",
+                    "Tambien chequear todos los A/C Termostat, Si dice Cancel Hold, hay q cliquear ahi para que vuelva a Auto",
+                    "Al finalizar el turno, verifique que no haya nadie en la casa y apague todas las luces y cierre todas las puertas"
+                ]
+            },
+            daily: {
+                title: "Daily Tasks / Tareas Diarias",
+                tasks: [
+                    "Siempre estar atentos a ordenes de Banquetes o del Restaurant",
+                    "Al llegar, revisar que las luces del Ballroom esten dirigidas hacia los centros de las mesas en caso de funcion",
+                    "Revisar los gases de los heaters y cambiar los cilindros en caso de ser necesario",
+                    "Revisar las mesas del patio que esten bien vestidas en caso de haber funcion",
+                    "Baños de Terrace Grill, Waterford revisar y limpiar, asi como cualquier necesidad del restaurant en caso de estar abierto",
+                    "Baños del Lounge y empleados limpiar en caso de ser necesario",
+                    "Pasillo verde y UPS Room mantener ordenado y limpio, si dejan cajas vacias, disponer de ellas",
+                    "Baños de Tennis (Remover toallas sucias y reponer con limpias)",
+                    "Limpiar banos de empleados a ultima hora",
+                    "Piscina chequear toallas, mismo procedimiento",
+                    "Todas las toallas sucias llevar al laundry y ponerlas a lavar de inmediato, volver a los 30 minutos y ponerlas a secar en HIGH por 40 minutos. Al terminar el secado si es posible fold y embolsar",
+                    "Quitar cushions del patio detras de la piscina y ordenar sillas, en caso de haber utilizado Pizza oven, remover linen, tent, sombrilla y mesas. Si hay 2 porters remover el Pizza Oven tambien",
+                    "A ultima hora, chequear Brookroom y remover cajas, basura y cambiar manteleria si fuera necesario",
+                    "Al final de cada dia, remover las bolsas de garbage en la entrada principal y de Golf",
+                    "Al terminar la funcion, retirar manteleria y estaquear sillas",
+                    "Tambien chequear todos los A/C Termostat, Si dice Cancel Hold, hay q cliquear ahi para que vuelva a Auto",
+                    "Al finalizar el turno, verifique que no haya nadie en la casa y apague todas las luces y cierre todas las puertas"
+                ]
+            },
+            walkthrough: {
+                title: "Walkthrough / Recorrido",
+                tasks: [
+                    "Abrir todas las puertas y prender luces en todas las areas necesarias",
+                    "Terraza: vacuum, baño, vidrios, sacar basura. Vacuum escalera hacia pro-shop. Patio de Terraza, ordenar sillas, dejar TVs en linea y barrer el piso y lavar en caso de ser necesario",
+                    "Bar terraza: limpiar, sacar basura, barrer y mapear por lo menos una vez a la semana. Chequear tambien los mats del bar y limpiar en caso de ser necesario",
+                    "Cocina: baño de las mujeres, limpieza total, mapear, reponer papel y jabon en caso de ser necesario",
+                    "Reponer papel de secar manos en sink de la cocina asi como jabon en caso de ser necesario",
+                    "Reponer supplies en el closet del Lounge y del Lobby en caso de ser necesario",
+                    "Oficinas: sacar basura, dusting, mapear bano, vidrios, espejos, reponer supplies y agua de ser necesario",
+                    "Bridal & Groom room: sacar basura, dusting, mapear bano, vidrios, espejos",
+                    "Lobby: vacuum, dust, mapear frente, vidrios, mesas, limpiar piano, ascensor vacuum y limpiar puerta",
+                    "Vacuum front door mats, limpiar lamparas exteriores y blower front door y remover basura y cigarrillos",
+                    "Escaleras vacuum, mapear y pulir landing de entrada al Waterfords",
+                    "Entramos por la puerta del costado de Waterfords al pasillo del golf, y ahi se da vacuum, limpiar moldings y cuadros",
+                    "Limpiar banos en Locker de empleados. Revisan banos de Members lockers solo en baja temporada",
+                    "Limpiar banos bajo escalera del pro-shop",
+                    "Subir al lounge y limpiar banos de hombres y mujeres, barrer y mapear solo con agua. En los urinarios, se debe reemplazarlos urinal screens una vez al mes",
+                    "Lavar el piso de la oficina de Natalia y vacuum la carpeta en forma diaria",
+                    "Revisar el bar, mostrador (Solo limpiar agua para limpiarlo) y lavar piso. Chequear tambien los mats del bar y limpiar en caso de ser necesario",
+                    "Oficina de Banquetes, dusting, basura y vacuum"
+                ]
+            },
+            "laundry-with-porter": {
+                title: "Laundry with Porter / Laundry con Porter",
+                tasks: [
+                    "Se comienza desde el comienzo del pasillo (Gym) y se pasa por los 2 vestuarios. Recoger basura",
+                    "Duchas, banos, piso, espejos, toallas, reponerlas, papel, refill dispensers",
+                    "Vacuum lockers room",
+                    "Limpiar espejos y vidrios por dentro y por fuera",
+                    "Todas las toallas sucias llevar al laundry y ponerlas a lavar de inmediato, volver a los 30 minutos y ponerlas a secar en HIGH por 40 minutos",
+                    "Laundry, limpiar filtros de las maquinas, filtro de agua",
+                    "Reponer liquidos de la lavadora, si no es posible pedir ayuda",
+                    "Tennis Lobby, limpiar mesas, silas y counter, vacuum",
+                    "Recoger basura y dejarlas temporalmente en el descanso de las escaleras que dan al lobby hasta que terminan",
+                    "Pool, basura, vacuum, chequear q no haya comida (no se puede comer, sacar foto y mostrar a RON). Bestidores, sacar basura y limpiar",
+                    "Chequear rejillas de la piscina y limpiarlas bien",
+                    "Limpiar espejos y vidrios por dentro y por fuera",
+                    "Chequear wipes desinfectantes",
+                    "Gym, basura, vacuum y mapo, chequear toallas, agua y vasos",
+                    "Vacuum pasillo",
+                    "Limpiar counter y superficie de los muros pequenos",
+                    "Todas las toallas sucias llevar al laundry y ponerlas a lavar de inmediato, volver a los 30 minutos y ponerlas a secar en HIGH por 40 minutos"
+                ]
+            },
+            "laundry-solo": {
+                title: "Laundry Solo",
+                tasks: [
+                    "Recoger basura y dejarlas temporalmente en el descanso de las escaleras que dan al lobby hasta que terminan",
+                    "Se comienza desde el lobby y se pasa por los 2 vestuarios",
+                    "Duchas, banos, piso, espejos, toallas, reponerlas, papel, refill dispensers",
+                    "Vacuum lockers room",
+                    "Gym, basura, vacuum y mapo, chequear toallas, agua y vasos",
+                    "Limpiar counter y superficie de los muros pequenos",
+                    "Pool, basura, vacuum, chequear q no haya comida (no se puede comer, sacar foto y mostrar a RON). Bestidores, sacar basura y limpiar",
+                    "Chequear rejillas de la piscina y limpiarlas bien",
+                    "Limpiar espejos y vidrios por dentro y por fuera",
+                    "Chequear wipes desinfectantes",
+                    "Vacuum pasillo",
+                    "Todas las toallas sucias llevar al laundry y ponerlas a lavar de inmediato, volver a los 30 minutos y ponerlas a secar en HIGH por 40 minutos",
+                    "Laundry, limpiar filtros de las maquinas, filtro de agua",
+                    "Reponer liquidos de la lavadora, si no es posible pedir ayuda",
+                    "Tennis Lobby, limpiar mesas, silas y counter, vacuum"
+                ]
+            }
+        };
+
+        // Initialize task data
+        let taskData = {};
+
+        // Initialize the application
+        function initApp() {
+            // Initialize task data for all task types
+            Object.keys(taskDefinitions).forEach(taskType => {
+                initializeTaskData(taskType);
+            });
+            
+            // Set up event listeners
+            setupEventListeners();
+        }
+
+        // Initialize task data structure
+        function initializeTaskData(taskType) {
+            taskData[taskType] = taskDefinitions[taskType].tasks.map(() => ({
+                completed: false,
+                completedBy: '',
+                timestamp: ''
+            }));
+        }
+
+        // Render tasks to the page
+        function renderTasks(taskType) {
+            const taskList = document.getElementById(`${taskType}-task-list`);
+            taskList.innerHTML = '';
+
+            taskDefinitions[taskType].tasks.forEach((task, index) => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                if (taskData[taskType][index].completed) {
+                    taskItem.classList.add('completed');
+                }
+                
+                const taskNumber = document.createElement('div');
+                taskNumber.className = 'task-number';
+                taskNumber.textContent = index + 1;
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'task-checkbox';
+                checkbox.checked = taskData[taskType][index].completed;
+                checkbox.addEventListener('change', () => toggleTask(taskType, index));
+                
+                const taskContent = document.createElement('div');
+                taskContent.className = 'task-content-wrapper';
+                
+                const taskText = document.createElement('p');
+                taskText.className = 'task-text';
+                taskText.textContent = task;
+                
+                const taskDetails = document.createElement('div');
+                taskDetails.className = 'task-details';
+                
+                const employeeSelect = document.createElement('select');
+                employeeSelect.className = 'employee-select';
+                employeeSelect.innerHTML = '<option value="">Select Porter</option>';
+                employees.forEach(employee => {
+                    const option = document.createElement('option');
+                    option.value = employee;
+                    option.textContent = employee;
+                    if (taskData[taskType][index].completedBy === employee) {
+                        option.selected = true;
+                    }
+                    employeeSelect.appendChild(option);
+                });
+                employeeSelect.disabled = !taskData[taskType][index].completed;
+                employeeSelect.addEventListener('change', (e) => {
+                    taskData[taskType][index].completedBy = e.target.value;
+                });
+                
+                const timestamp = document.createElement('span');
+                timestamp.className = 'timestamp';
+                timestamp.textContent = taskData[taskType][index].timestamp ? 
+                    `Completed: ${taskData[taskType][index].completedBy} at ${taskData[taskType][index].timestamp}` : 
+                    (taskData[taskType][index].completed ? 'Completed' : '');
+                
+                taskDetails.appendChild(employeeSelect);
+                taskDetails.appendChild(timestamp);
+                
+                taskContent.appendChild(taskText);
+                taskContent.appendChild(taskDetails);
+                
+                taskItem.appendChild(taskNumber);
+                taskItem.appendChild(checkbox);
+                taskItem.appendChild(taskContent);
+                
+                taskList.appendChild(taskItem);
+            });
+        }
+
+        // Toggle task completion
+        function toggleTask(taskType, index) {
+            taskData[taskType][index].completed = !taskData[taskType][index].completed;
+            
+            if (taskData[taskType][index].completed) {
+                taskData[taskType][index].timestamp = new Date().toLocaleString();
+                // Auto-select first employee if none selected
+                if (!taskData[taskType][index].completedBy) {
+                    taskData[taskType][index].completedBy = employees[0];
+                }
+            } else {
+                taskData[taskType][index].timestamp = '';
+                taskData[taskType][index].completedBy = '';
+            }
+            
+            renderTasks(taskType);
+            updateProgress(taskType);
+        }
+
+        // Update progress bar
+        function updateProgress(taskType) {
+            const completedCount = taskData[taskType].filter(task => task.completed).length;
+            const totalCount = taskData[taskType].length;
+            const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+            
+            const progressBar = document.getElementById(`${taskType}-progress`);
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}% (${completedCount}/${totalCount})`;
+        }
+
+        // Reset all tasks for a specific type
+        function resetTasks(taskType) {
+            if (confirm('Are you sure you want to reset all tasks?')) {
+                initializeTaskData(taskType);
+                renderTasks(taskType);
+                updateProgress(taskType);
+            }
+        }
+
+        // Save all task data
+        function saveAllTasks() {
+            alert('In a real application, this would save your progress. In this demo, data is only stored in your browser temporarily.');
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Task selection buttons
+            document.querySelectorAll('.task-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove selected class from all buttons
+                    document.querySelectorAll('.task-btn').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked button
+                    button.classList.add('selected');
+                    
+                    // Hide all task contents
+                    document.querySelectorAll('.task-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show selected task content
+                    const taskType = button.dataset.task;
+                    document.getElementById(`${taskType}-tasks`).classList.add('active');
+                    
+                    // Render tasks for selected type
+                    renderTasks(taskType);
+                    updateProgress(taskType);
+                });
+            });
+        }
+
+        // Initialize the app when the page loads
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
